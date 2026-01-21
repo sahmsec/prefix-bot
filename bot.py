@@ -124,6 +124,30 @@ async def listprefixes(ctx):
     
     await ctx.send("**Configured Prefixes:**\n" + "\n".join(lines))
 
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def updateall(ctx):
+    """Update all members' prefixes based on current settings"""
+    count = 0
+    for member in ctx.guild.members:
+        role = get_highest_display_role(member)
+        if role:
+            await apply_prefix(member, role)
+            count += 1
+    
+    await ctx.send(f"✅ Updated {count} member(s) with new prefixes!")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def updateuser(ctx, member: discord.Member):
+    """Update a specific user's prefix"""
+    role = get_highest_display_role(member)
+    if role:
+        await apply_prefix(member, role)
+        await ctx.send(f"✅ Updated prefix for {member.mention}")
+    else:
+        await ctx.send(f"❌ {member.mention} has no roles with prefixes.")
+
 # ======================
 # AUTO ROLE UPDATE
 # ======================
@@ -274,6 +298,53 @@ async def tag(ctx):
         view=TagView(ctx.author),
         delete_after=60
     )
+
+@bot.command()
+async def help(ctx):
+    """Show all available commands"""
+    
+    # Check if user is admin
+    is_admin = ctx.author.guild_permissions.administrator
+    
+    user_commands = """
+**🎯 User Commands:**
+`!tag` - Open a menu to select your prefix from available roles
+`!help` - Show this help message
+    """
+    
+    admin_commands = """
+**⚙️ Admin Commands:**
+`!setprefix @role prefix` - Set a prefix for a role
+  Example: `!setprefix @VIP 💎`
+
+`!removeprefix @role` - Remove a role's prefix
+  Example: `!removeprefix @VIP`
+
+`!listprefixes` - Show all configured role prefixes
+
+`!updateall` - Update all members' nicknames with current prefix settings
+  Use this after changing prefixes to apply changes
+
+`!updateuser @member` - Update a specific member's nickname
+  Example: `!updateuser @JohnDoe`
+    """
+    
+    if is_admin:
+        embed = discord.Embed(
+            title="🤖 Prefix Bot - Help",
+            description=user_commands + "\n" + admin_commands,
+            color=discord.Color.blue()
+        )
+        embed.set_footer(text="Bot by Anthropic Claude | Prefix management made easy")
+    else:
+        embed = discord.Embed(
+            title="🤖 Prefix Bot - Help",
+            description=user_commands,
+            color=discord.Color.green()
+        )
+        embed.set_footer(text="Contact an admin to set up role prefixes")
+    
+    await ctx.send(embed=embed)
 
 # ======================
 # BOT EVENTS
