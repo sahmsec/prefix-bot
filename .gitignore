@@ -1,0 +1,5 @@
+prefixes.json
+__pycache__/
+*.pyc
+.env
+BOT_TOKEN
