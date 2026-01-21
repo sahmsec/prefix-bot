@@ -69,12 +69,18 @@ async def apply_prefix(member, role):
     if not prefix:
         return
 
-    # Use current nickname if exists, otherwise use username
-    base_name = member.display_name
+    # Get the base name to use
+    current_nick = member.nick
     
-    # Remove old prefix if it exists (to avoid stacking prefixes)
-    if " | " in base_name:
-        base_name = base_name.split(" | ", 1)[1]
+    if current_nick and " | " in current_nick:
+        # User has an old prefix format, extract the name part after " | "
+        base_name = current_nick.split(" | ", 1)[1]
+    elif current_nick:
+        # User has a custom nickname without prefix
+        base_name = current_nick
+    else:
+        # No nickname set, use username
+        base_name = member.name
     
     nickname = f"{prefix} | {base_name}"
 
@@ -147,6 +153,27 @@ async def updateuser(ctx, member: discord.Member):
         await ctx.send(f"✅ Updated prefix for {member.mention}")
     else:
         await ctx.send(f"❌ {member.mention} has no roles with prefixes.")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def setname(ctx, member: discord.Member, *, new_name: str):
+    """Manually set a member's display name with their current prefix"""
+    role = get_highest_display_role(member)
+    
+    if not role:
+        await ctx.send(f"❌ {member.mention} has no roles with prefixes.")
+        return
+    
+    prefix = role_prefixes.get(str(role.id))
+    nickname = f"{prefix} | {new_name}"
+    
+    try:
+        await member.edit(nick=nickname)
+        await ctx.send(f"✅ Set {member.mention}'s name to **{nickname}**")
+    except discord.Forbidden:
+        await ctx.send("❌ I don't have permission to change that user's nickname.")
+    except discord.HTTPException as e:
+        await ctx.send(f"❌ Failed to change nickname: {e}")
 
 # ======================
 # AUTO ROLE UPDATE
@@ -261,10 +288,15 @@ class TagSelect(discord.ui.Select):
             )
             return
 
-        # Use current display name, remove old prefix if exists
-        base_name = interaction.user.display_name
-        if " | " in base_name:
-            base_name = base_name.split(" | ", 1)[1]
+        # Use current nickname or username, but reset if old prefix exists
+        current_nick = interaction.user.nick
+        
+        if current_nick and " | " in current_nick:
+            # Has old prefix, use username
+            base_name = interaction.user.name
+        else:
+            # Use current display name
+            base_name = interaction.user.display_name
         
         nickname = f"{prefix} | {base_name}"
 
@@ -305,7 +337,7 @@ async def help(ctx):
     is_admin = ctx.author.guild_permissions.administrator
     
     user_msg = "**User Commands:**\npb!tag - Select your prefix\npb!help - Show this help"
-    admin_msg = "\n\n**Admin Commands:**\npb!setprefix @role prefix\npb!removeprefix @role\npb!listprefixes\npb!updateall\npb!updateuser @member"
+    admin_msg = "\n\n**Admin Commands:**\npb!setprefix @role prefix - Set role prefix\npb!removeprefix @role - Remove prefix\npb!listprefixes - List all prefixes\npb!updateall - Update all members\npb!updateuser @member - Update one member\npb!setname @member Name - Manually set member's display name"
     
     await ctx.send(user_msg + (admin_msg if is_admin else ""))
 
