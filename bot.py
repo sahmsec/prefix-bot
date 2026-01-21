@@ -158,14 +158,24 @@ async def updateuser(ctx, member: discord.Member):
 @commands.has_permissions(administrator=True)
 async def setname(ctx, member: discord.Member, *, new_name: str):
     """Manually set a member's display name with their current prefix"""
-    role = get_highest_display_role(member)
     
-    if not role:
-        await ctx.send(f"❌ {member.mention} has no roles with prefixes.")
-        return
+    # Check if they have a current nickname with a prefix
+    current_nick = member.nick
     
-    prefix = role_prefixes.get(str(role.id))
-    nickname = f"{prefix} | {new_name}"
+    if current_nick and " | " in current_nick:
+        # Extract the prefix part and apply to new name
+        prefix = current_nick.split(" | ")[0]
+        nickname = f"{prefix} | {new_name}"
+    else:
+        # No prefix found, check if they have a prefix role
+        role = get_highest_display_role(member)
+        
+        if not role:
+            await ctx.send(f"❌ {member.mention} has no prefix set and no roles with prefixes.")
+            return
+        
+        prefix = role_prefixes.get(str(role.id))
+        nickname = f"{prefix} | {new_name}"
     
     try:
         await member.edit(nick=nickname)
