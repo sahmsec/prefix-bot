@@ -18,7 +18,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="pb!", intents=intents)
 
 PREFIX_FILE = "prefixes.json"
 
@@ -299,32 +299,41 @@ async def tag(ctx):
         delete_after=60
     )
 
-@bot.command(name='bothelp')
-async def bothelp(ctx):
+@bot.command(name='help')
+async def help_command(ctx):
     """Show all available commands"""
     
     is_admin = ctx.author.guild_permissions.administrator
     
     if is_admin:
-        msg = """**🤖 Prefix Bot Commands**
+        msg = """**🤖 Prefix Bot - Commands**
 
-**User Commands:**
-`!tag` - Select your prefix
-`!bothelp` - Show this help
+**👤 User Commands:**
+`pb!tag` - Open menu to select your prefix
+`pb!help` - Show this help message
 
-**Admin Commands:**
-`!setprefix @role prefix` - Set prefix for a role
-`!removeprefix @role` - Remove prefix
-`!listprefixes` - List all prefixes
-`!updateall` - Update everyone's nicknames
-`!updateuser @member` - Update one person"""
+**⚙️ Admin Commands:**
+`pb!setprefix @role prefix` - Set a prefix for a role
+  Example: `pb!setprefix @VIP 💎`
+
+`pb!removeprefix @role` - Remove a role's prefix
+  Example: `pb!removeprefix @VIP`
+
+`pb!listprefixes` - Show all configured prefixes
+
+`pb!updateall` - Update all members with current prefixes
+  (Use after changing prefix settings)
+
+`pb!updateuser @member` - Update one specific member
+  Example: `pb!updateuser @JohnDoe`"""
     else:
-        msg = """**🤖 Prefix Bot Commands**
+        msg = """**🤖 Prefix Bot - Commands**
 
-`!tag` - Select your prefix from available roles
-`!bothelp` - Show this help message
+**👤 Available Commands:**
+`pb!tag` - Select your prefix from available roles
+`pb!help` - Show this help message
 
-Contact an admin to set up role prefixes!"""
+💡 Contact an admin to set up role prefixes!"""
     
     await ctx.send(msg)
 
