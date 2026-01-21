@@ -69,7 +69,14 @@ async def apply_prefix(member, role):
     if not prefix:
         return
 
-    nickname = f"{prefix} | {member.name}"
+    # Use current nickname if exists, otherwise use username
+    base_name = member.display_name
+    
+    # Remove old prefix if it exists (to avoid stacking prefixes)
+    if " | " in base_name:
+        base_name = base_name.split(" | ", 1)[1]
+    
+    nickname = f"{prefix} | {base_name}"
 
     try:
         await member.edit(nick=nickname)
@@ -230,7 +237,12 @@ class TagSelect(discord.ui.Select):
             )
             return
 
-        nickname = f"{prefix} | {interaction.user.name}"
+        # Use current display name, remove old prefix if exists
+        base_name = interaction.user.display_name
+        if " | " in base_name:
+            base_name = base_name.split(" | ", 1)[1]
+        
+        nickname = f"{prefix} | {base_name}"
 
         try:
             await interaction.user.edit(nick=nickname)
