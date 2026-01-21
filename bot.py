@@ -299,52 +299,34 @@ async def tag(ctx):
         delete_after=60
     )
 
-@bot.command()
-async def help(ctx):
+@bot.command(name='bothelp')
+async def bothelp(ctx):
     """Show all available commands"""
     
-    # Check if user is admin
     is_admin = ctx.author.guild_permissions.administrator
     
-    user_commands = """
-**🎯 User Commands:**
-`!tag` - Open a menu to select your prefix from available roles
-`!help` - Show this help message
-    """
-    
-    admin_commands = """
-**⚙️ Admin Commands:**
-`!setprefix @role prefix` - Set a prefix for a role
-  Example: `!setprefix @VIP 💎`
-
-`!removeprefix @role` - Remove a role's prefix
-  Example: `!removeprefix @VIP`
-
-`!listprefixes` - Show all configured role prefixes
-
-`!updateall` - Update all members' nicknames with current prefix settings
-  Use this after changing prefixes to apply changes
-
-`!updateuser @member` - Update a specific member's nickname
-  Example: `!updateuser @JohnDoe`
-    """
-    
     if is_admin:
-        embed = discord.Embed(
-            title="🤖 Prefix Bot - Help",
-            description=user_commands + "\n" + admin_commands,
-            color=discord.Color.blue()
-        )
-        embed.set_footer(text="Bot by Anthropic Claude | Prefix management made easy")
+        msg = """**🤖 Prefix Bot Commands**
+
+**User Commands:**
+`!tag` - Select your prefix
+`!bothelp` - Show this help
+
+**Admin Commands:**
+`!setprefix @role prefix` - Set prefix for a role
+`!removeprefix @role` - Remove prefix
+`!listprefixes` - List all prefixes
+`!updateall` - Update everyone's nicknames
+`!updateuser @member` - Update one person"""
     else:
-        embed = discord.Embed(
-            title="🤖 Prefix Bot - Help",
-            description=user_commands,
-            color=discord.Color.green()
-        )
-        embed.set_footer(text="Contact an admin to set up role prefixes")
+        msg = """**🤖 Prefix Bot Commands**
+
+`!tag` - Select your prefix from available roles
+`!bothelp` - Show this help message
+
+Contact an admin to set up role prefixes!"""
     
-    await ctx.send(embed=embed)
+    await ctx.send(msg)
 
 # ======================
 # BOT EVENTS
